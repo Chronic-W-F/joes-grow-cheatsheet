@@ -8,7 +8,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  async function handleSubmit() {
     if (!email) {
       setMessage("Enter an email first.");
       return;
@@ -20,67 +20,126 @@ export default function Home() {
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email }),
       });
 
       const data = await res.json();
 
-      if (res.ok && (data.status === "subscribed" || data.status === "pending")) {
+      if (res.ok) {
         setMessage("Success! You’re on the list.");
         setName("");
         setEmail("");
-      } else if (data.title === "Member Exists") {
-        setMessage("You’re already on the list.");
       } else {
-        setMessage(data.detail || "Something went wrong.");
+        setMessage(data.detail || data.error || "Something went wrong.");
       }
-    } catch (error) {
-      setMessage("Connection error. Try again.");
+    } catch (err) {
+      setMessage("Connection error. API route may not be deployed correctly.");
     }
 
     setLoading(false);
-  };
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-6 text-white">
-      <div className="w-full max-w-md rounded-3xl bg-zinc-900 p-8 shadow-xl">
-        <p className="mb-6 text-xl font-bold text-lime-500">Joe’s Grows</p>
+    <main style={styles.page}>
+      <section style={styles.card}>
+        <p style={styles.brand}>Joe’s Grows</p>
 
-        <h1 className="mb-6 text-5xl font-bold leading-tight">
-          Free Plant Deficiency Cheat Sheet
-        </h1>
+        <h1 style={styles.title}>Free Plant Deficiency Cheat Sheet</h1>
 
-        <p className="mb-6 text-lg text-zinc-300">
+        <p style={styles.text}>
           Drop your email below and get Joe’s free grower cheat sheet.
         </p>
 
         <input
-          className="mb-4 w-full rounded-2xl p-4 text-black"
+          style={styles.input}
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
 
         <input
-          className="mb-4 w-full rounded-2xl p-4 text-black"
+          style={styles.input}
           placeholder="Your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <button
+          type="button"
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full rounded-2xl bg-lime-500 p-4 font-bold text-black disabled:opacity-60"
+          style={styles.button}
         >
           {loading ? "Submitting..." : "Get The Free Cheat Sheet"}
         </button>
 
-        {message && <p className="mt-4 text-center text-sm">{message}</p>}
-      </div>
-    </div>
+        {message && <p style={styles.message}>{message}</p>}
+      </section>
+    </main>
   );
 }
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "#050505",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "24px",
+    color: "white",
+    fontFamily: "Arial, sans-serif",
+  },
+  card: {
+    width: "100%",
+    maxWidth: "430px",
+    background: "#18181b",
+    borderRadius: "28px",
+    padding: "34px",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+    border: "1px solid #27272a",
+  },
+  brand: {
+    color: "#7bd80f",
+    fontWeight: "800",
+    fontSize: "22px",
+    marginBottom: "28px",
+  },
+  title: {
+    fontSize: "46px",
+    lineHeight: "1.05",
+    margin: "0 0 26px",
+    fontWeight: "900",
+  },
+  text: {
+    color: "#d4d4d8",
+    fontSize: "19px",
+    lineHeight: "1.45",
+    marginBottom: "24px",
+  },
+  input: {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "17px",
+    borderRadius: "18px",
+    border: "none",
+    marginBottom: "14px",
+    fontSize: "16px",
+  },
+  button: {
+    width: "100%",
+    padding: "17px",
+    borderRadius: "18px",
+    border: "none",
+    background: "#7bd80f",
+    color: "black",
+    fontWeight: "900",
+    fontSize: "18px",
+  },
+  message: {
+    textAlign: "center",
+    marginTop: "18px",
+    fontSize: "15px",
+  },
+};
