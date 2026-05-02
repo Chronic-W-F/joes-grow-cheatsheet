@@ -1,44 +1,87 @@
-export async function POST(req) {
-  try {
-    const { name, email } = await req.json();
+"use client";
 
-    const API_KEY = process.env.MAILCHIMP_API_KEY;
-    const AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID;
+import { useState } from "react";
 
-    if (!API_KEY || !AUDIENCE_ID) {
-      return Response.json(
-        { error: "Missing Mailchimp environment variables" },
-        { status: 500 }
-      );
+export default function Home() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit() {
+    if (!email) {
+      setMessage("Enter an email first.");
+      return;
     }
 
-    const DC = API_KEY.split("-")[1];
+    setLoading(true);
+    setMessage("");
 
-    const response = await fetch(
-      `https://${DC}.api.mailchimp.com/3.0/lists/${AUDIENCE_ID}/members`,
-      {
+    try {
+      const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: {
-          Authorization: `apikey ${API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email_address: email,
-          status: "subscribed",
-          merge_fields: {
-            FNAME: name || "",
-          },
-        }),
+        body: JSON.stringify({ name, email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && (data.status === "subscribed" || data.status === "pending")) {
+        setMessage("Success! You’re on the list.");
+        setName("");
+        setEmail("");
+      } else if (data.title === "Member Exists") {
+        setMessage("You’re already on the list.");
+      } else {
+        setMessage(data.detail || data.error || "Something went wrong.");
       }
-    );
+    } catch (error) {
+      setMessage("Connection error. Try again.");
+    }
 
-    const data = await response.json();
-
-    return Response.json(data, { status: response.status });
-  } catch (error) {
-    return Response.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
+    setLoading(false);
   }
-}
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-black px-6 text-white">
+      <section className="w-full max-w-md rounded-3xl bg-zinc-900 p-8 shadow-xl">
+        <p className="mb-6 text-xl font-bold text-lime-500">Joe’s Grows</p>
+
+        <h1 className="mb-6 text-5xl font-bold leading-tight">
+          Free Plant Deficiency Cheat Sheet
+        </h1>
+
+        <p className="mb-6 text-lg text-zinc-300">
+          Drop your email below and get Joe’s free grower cheat sheet.
+        </p>
+
+        <input
+          className="mb-4 w-full rounded-2xl p-4 text-black"
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          className="mb-4 w-full rounded-2xl p-4 text-black"
+          placeholder="Your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full rounded-2xl bg-lime-500 p-4 font-bold text-black disabled:opacity-60"
+        >
+          {loading ? "Submitting..." : "Get The Free Cheat Sheet"}
+        </button>
+
+        {message && <p className="mt-4 text-center text-sm">{message}</p>}
+      </section>
+    </main>
+  );
+        }
