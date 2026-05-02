@@ -1,74 +1,55 @@
+"use client";
+import { useState } from "react";
+
 export default function Home() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = async () => {
+    if (!email) return alert("Enter email");
+
+    const res = await fetch("/api/subscribe", {
+      method: "POST",
+      body: JSON.stringify({ name, email }),
+    });
+
+    const data = await res.json();
+
+    if (data.status === "subscribed") {
+      alert("Success! Check your email.");
+    } else {
+      alert("Something went wrong");
+      console.log(data);
+    }
+  };
+
   return (
-    <main style={{
-      minHeight: "100vh",
-      background: "#09090b",
-      color: "white",
-      padding: "40px 20px",
-      fontFamily: "Arial, sans-serif"
-    }}>
-      <section style={{
-        maxWidth: "520px",
-        margin: "0 auto",
-        background: "#18181b",
-        border: "1px solid #27272a",
-        borderRadius: "24px",
-        padding: "28px"
-      }}>
-        <p style={{ color: "#84cc16", fontWeight: "bold" }}>
-          Joe’s Grows
-        </p>
-
-        <h1 style={{ fontSize: "36px", lineHeight: "1.1" }}>
+    <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
+      <div className="bg-gray-900 p-6 rounded-xl w-80">
+        <h1 className="text-green-400 text-xl mb-2">Joe’s Grows</h1>
+        <h2 className="text-2xl font-bold mb-4">
           Free Plant Deficiency Cheat Sheet
-        </h1>
+        </h2>
 
-        <p style={{ color: "#d4d4d8", lineHeight: "1.5" }}>
-          Drop your email below and get Joe’s free grower cheat sheet.
-        </p>
+        <input
+          className="w-full mb-2 p-2 rounded text-black"
+          placeholder="Your name"
+          onChange={(e) => setName(e.target.value)}
+        />
 
-        <form>
-          <input
-            type="text"
-            placeholder="Your name"
-            style={{
-              width: "100%",
-              padding: "14px",
-              marginBottom: "12px",
-              borderRadius: "12px",
-              border: "1px solid #3f3f46"
-            }}
-          />
+        <input
+          className="w-full mb-4 p-2 rounded text-black"
+          placeholder="Your email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-          <input
-            type="email"
-            placeholder="Your email"
-            style={{
-              width: "100%",
-              padding: "14px",
-              marginBottom: "12px",
-              borderRadius: "12px",
-              border: "1px solid #3f3f46"
-            }}
-          />
-
-          <button
-            type="button"
-            style={{
-              width: "100%",
-              padding: "14px",
-              borderRadius: "12px",
-              border: "none",
-              background: "#84cc16",
-              color: "#09090b",
-              fontWeight: "bold",
-              fontSize: "16px"
-            }}
-          >
-            Get The Free Cheat Sheet
-          </button>
-        </form>
-      </section>
-    </main>
+        <button
+          onClick={handleSubmit}
+          className="bg-green-500 w-full p-2 rounded text-black font-bold"
+        >
+          Get The Free Cheat Sheet
+        </button>
+      </div>
+    </div>
   );
 }
