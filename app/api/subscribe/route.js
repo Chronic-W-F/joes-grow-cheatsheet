@@ -1,29 +1,30 @@
-export async function POST(req) {
-  const { name, email } = await req.json();
+"use client";
+import { useState } from "react";
 
-  const API_KEY = process.env.MAILCHIMP_API_KEY;
-  const AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID;
-  const DC = API_KEY.split('-')[1];
+export default function Home() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
-  const response = await fetch(
-    `https://${DC}.api.mailchimp.com/3.0/lists/${AUDIENCE_ID}/members`,
-    {
+  const handleSubmit = async () => {
+    if (!email) return alert("Enter email");
+
+    const res = await fetch("/api/subscribe", {
       method: "POST",
-      headers: {
-        Authorization: `apikey ${API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email_address: email,
-        status: "subscribed",
-        merge_fields: {
-          FNAME: name,
-        },
-      }),
+      body: JSON.stringify({ name, email }),
+    });
+
+    const data = await res.json();
+
+    if (data.status === "subscribed") {
+      alert("Success! You're on the list.");
+    } else {
+      alert("Something went wrong");
+      console.log(data);
     }
-  );
+  };
 
-  const data = await response.json();
-
-  return Response.json(data);
-}
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
+      <div className="bg-gray-900 p-6 rounded-xl w-80">
+        <h1 className="text-green-400 text-xl mb-2">Joe’s Grows</h1>
+        <h2 className="text-2
